@@ -9,7 +9,7 @@ export class MapUserDevice {
   @Prop({ default: null })
   user_id: mongoose.Types.ObjectId;
 
-  @Prop({default: null})
+  @Prop({ default: null })
   device_token: string;
 
   @Prop()

@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, Res } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { AdminLoginDto } from './dto/adminlogin.dto';
 import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
@@ -14,6 +14,8 @@ import { News, NewsDocument } from 'src/users/schema/news.schema';
 import { User, UserDocument } from 'src/users/schema/user.schema';
 import { UpdateCategoryDto } from './dto/updateCategory.dto';
 import { FetchNewsDto } from './dto/fetchnews.dto';
+import { Attachment, AttachmentDocument } from './schema/attachments.schema';
+import { AddNewsDto } from './dto/addnews.dto';
 
 @Injectable()
 export class AdminService {
@@ -24,9 +26,11 @@ export class AdminService {
     private readonly categoryModel: Model<CategoryDocument>,
     @InjectModel(News.name) private readonly newsModel: Model<NewsDocument>,
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(Attachment.name)
+    private readonly attachmentModel: Model<AttachmentDocument>,
   ) {}
 
-  async login(body: AdminLoginDto, @Res() res: Response) {
+  async login(body: AdminLoginDto, res: Response) {
     try {
       const admin = await this.adminModel.findOne({ email: body.email });
       if (!admin) {
@@ -216,6 +220,31 @@ export class AdminService {
       return res.status(HttpStatus.CREATED).json({
         success: true,
         message: 'News fetched successfully.',
+      });
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  async addNews(body: AddNewsDto, res: Response) {
+    try {
+      const news = await this.newsModel.findOne({
+        title: body.title,
+        author: body.author,
+      });
+      if (news) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'News already exist',
+        });
+      }
+      await new this.newsModel(body).save();
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'News added successfully',
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({

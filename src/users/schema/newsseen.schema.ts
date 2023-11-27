@@ -13,6 +13,5 @@ export class MapNewsSeen {
   device_token: string;
 }
 
-export const MapNewsSeenSchema =
-  SchemaFactory.createForClass(MapNewsSeen);
+export const MapNewsSeenSchema = SchemaFactory.createForClass(MapNewsSeen);
 export type MapNewsSeenDocument = MapNewsSeen & Document;

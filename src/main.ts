@@ -6,9 +6,7 @@ const express = require('express');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const whiteList = [
-    'http://localhost:3000',
-  ];
+  const whiteList = ['http://localhost:3000'];
   app.enableCors({
     origin: function (origin, callback) {
       if (whiteList.indexOf(origin) >= 0 || !origin) {

@@ -5,6 +5,7 @@ import { Response } from 'express';
 import { SignInDto } from './dto/login.dto';
 import { AddPreferredCategoryDto } from './dto/addpreferredcategory.dto';
 import { GetAllNewsDto } from './dto/getallnews.dto';
+import { AllNewsByCatgeory } from './dto/getallnewsbycategory.dto';
 
 @Controller('users')
 export class UsersController {
@@ -35,11 +36,19 @@ export class UsersController {
   @Post('get_all_news')
   async getAllNews(
     @Body() body: GetAllNewsDto,
-    @Query('category') category: string,
     @Query('page') page: number,
     @Query('limit') limit: number,
     @Res() res: Response,
   ) {
-    return await this.usersService.getAllNews(category,body, page, limit, res);
+    return await this.usersService.getAllNews(body, page, limit, res);
+  }
+
+  //----------------------Get All News By Category----------------------//
+  @Post('get_all_news_by_category')
+  async getAllNewsByCategory(
+    @Body() body: AllNewsByCatgeory,
+    @Res() res: Response,
+  ) {
+    return await this.usersService.getAllNewsByCategory(body, res);
   }
 }

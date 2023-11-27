@@ -14,6 +14,7 @@ import { Response } from 'express';
 import { AddCategoryDto } from './dto/addcategory.dto';
 import { UpdateCategoryDto } from './dto/updateCategory.dto';
 import { FetchNewsDto } from './dto/fetchnews.dto';
+import { AddNewsDto } from './dto/addnews.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -66,5 +67,11 @@ export class AdminController {
   @Post('fetch_news_and_save')
   async fetchNewsAndSave(@Body() body: FetchNewsDto, @Res() res: Response) {
     return await this.adminService.fetchNewsAndSave(body, res);
+  }
+
+  //-------------------Add News----------------------//
+  @Post('add_news')
+  async addNews(@Body() body: AddNewsDto, res: Response) {
+    return await this.adminService.addNews(body, res);
   }
 }

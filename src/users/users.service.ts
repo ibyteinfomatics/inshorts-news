@@ -25,6 +25,7 @@ import {
   PreferredCategory,
   PreferredCategoryDocument,
 } from './schema/preffedCategory.schema';
+import { AllNewsByCatgeory } from './dto/getallnewsbycategory.dto';
 
 @Injectable()
 export class UsersService {
@@ -205,22 +206,16 @@ export class UsersService {
   }
 
   //----------------------Get All News----------------------//
-  async getAllNews(
-    category: string,
-    body: GetAllNewsDto,
-    page = 1,
-    limit = 10,
-    res: Response,
-  ) {
+  async getAllNews(body: GetAllNewsDto, page = 1, limit = 10, res: Response) {
     try {
-      let userCategories = await this.mapUserCategoryModel.find({
+      const userCategories = await this.mapUserCategoryModel.find({
         $or: [
           { user_id: new mongoose.Types.ObjectId(body.user_id) },
           { device_token: body.device_token },
         ],
       });
-      let favourites = [];
-      let notInterested = [];
+      const favourites = [];
+      const notInterested = [];
       for (const category of userCategories) {
         if (category.priority === 'all') {
           favourites.push(category.category_id);
@@ -232,7 +227,7 @@ export class UsersService {
       const allNews = await this.newsModel.countDocuments({
         category_id: { $nin: notInterested },
       });
-      let seenNews = await this.mapNewsSeenModel.find({
+      const seenNews = await this.mapNewsSeenModel.find({
         $or: [
           { device_token: body.device_token },
           { user_id: new mongoose.Types.ObjectId(body.user_id) },
@@ -258,7 +253,7 @@ export class UsersService {
           { category_id: { $nin: notInterested } },
         ],
       });
-      let seenArr = [];
+      const seenArr = [];
       for (const news of seenNews) {
         seenArr.push(news.news_id);
       }
@@ -398,5 +393,39 @@ export class UsersService {
     }
   }
 
-  async getAllNewsByCategory(){}
+  //----------------------Get All News By Category----------------------//
+  async getAllNewsByCategory(body: AllNewsByCatgeory, res: Response) {
+    try {
+      const noNewsCatgeory = await this.mapUserCategoryModel.find({
+        $or: [
+          { user_id: new mongoose.Types.ObjectId(body.user_id) },
+          { device_token: body.device_token },
+        ],
+      });
+      const notInterested = [];
+      for (const news of noNewsCatgeory) {
+        if (news['user_id']) {
+          notInterested.push(news.user_id);
+        } else {
+          notInterested.push(news.device_token);
+        }
+      }
+      const news = await this.newsModel.find({
+        category_name: body.category,
+        $or: [
+          { user_id: { $nin: notInterested } },
+          { device_token: { $nin: notInterested } },
+        ],
+      });
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        news,
+      });
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
 }
