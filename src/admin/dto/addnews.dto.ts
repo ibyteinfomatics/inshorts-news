@@ -1,12 +1,9 @@
-import { IsIn, IsNotEmpty, IsString } from 'class-validator';
+import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class AddNewsDto {
   @IsNotEmpty()
   @IsString()
-  category_id: string;
-  @IsNotEmpty()
-  @IsString()
-  category_name: string;
+  category: string;
   @IsNotEmpty()
   @IsString()
   @IsIn(['major', 'all'])
@@ -26,13 +23,7 @@ export class AddNewsDto {
   @IsNotEmpty()
   @IsString()
   reference_link: string;
-  @IsNotEmpty()
-  @IsString()
-  image: string;
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   content: string;
-  @IsNotEmpty()
-  @IsString()
-  published_at: string;
 }

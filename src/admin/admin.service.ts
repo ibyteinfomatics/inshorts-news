@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { AdminLoginDto } from './dto/adminlogin.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Admin, AdminDocument } from './schema/admin.schema';
@@ -229,7 +229,12 @@ export class AdminService {
     }
   }
 
-  async addNews(body: AddNewsDto, res: Response) {
+  async addNews(
+    req: Request,
+    body: AddNewsDto,
+    file: Express.Multer.File,
+    res: Response,
+  ) {
     try {
       const news = await this.newsModel.findOne({
         title: body.title,
@@ -241,7 +246,29 @@ export class AdminService {
           message: 'News already exist',
         });
       }
-      await new this.newsModel(body).save();
+      const category = await this.categoryModel.findOne({
+        slug: body.category,
+      });
+      const url = `${req.protocol}://${req.headers.host}/uploads/${file.filename}`;
+      if (!file) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'Image is Required',
+        });
+      }
+      await new this.newsModel({
+        category_id: new mongoose.Types.ObjectId(category._id),
+        category_name: body.category,
+        type: body.type,
+        source: body.source,
+        author: body.author,
+        title: body.title,
+        description: body.description,
+        reference_link: body.reference_link,
+        image: url,
+        content: body.content,
+        published_at: new Date,
+      }).save();
       return res.status(HttpStatus.OK).json({
         success: true,
         message: 'News added successfully',
