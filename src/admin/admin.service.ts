@@ -16,6 +16,10 @@ import { UpdateCategoryDto } from './dto/updateCategory.dto';
 import { FetchNewsDto } from './dto/fetchnews.dto';
 import { Attachment, AttachmentDocument } from './schema/attachments.schema';
 import { AddNewsDto } from './dto/addnews.dto';
+import {
+  Notification,
+  NotificationDocument,
+} from './schema/notification.schema';
 
 @Injectable()
 export class AdminService {
@@ -28,6 +32,8 @@ export class AdminService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(Attachment.name)
     private readonly attachmentModel: Model<AttachmentDocument>,
+    @InjectModel(Notification.name)
+    private readonly notificationModel: Model<NotificationDocument>,
   ) {}
 
   async login(body: AdminLoginDto, res: Response) {
@@ -269,6 +275,19 @@ export class AdminService {
         content: body.content,
         published_at: new Date(),
       }).save();
+      const users = await this.userModel.find();
+      for (const user of users) {
+        await new this.notificationModel({
+          sender_type: 'admin',
+          sender_id: null,
+          receiver_type: 'user',
+          receiver_id: user._id,
+          type: 'news',
+          action: 'New news posted',
+          title: 'New news',
+          body: 'New news available',
+        }).save();
+      }
       return res.status(HttpStatus.OK).json({
         success: true,
         message: 'News added successfully',

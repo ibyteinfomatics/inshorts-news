@@ -8,6 +8,7 @@ import { Category, CategorySchema } from 'src/users/schema/categories.schema';
 import { News, NewsSchema } from 'src/users/schema/news.schema';
 import { User, UserSchema } from 'src/users/schema/user.schema';
 import { Attachment, AttachmentSchema } from './schema/attachments.schema';
+import { Notification, NotificationSchema } from './schema/notification.schema';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { Attachment, AttachmentSchema } from './schema/attachments.schema';
       { name: News.name, schema: NewsSchema },
       { name: User.name, schema: UserSchema },
       { name: Attachment.name, schema: AttachmentSchema },
+      { name: Notification.name, schema: NotificationSchema },
     ]),
   ],
   controllers: [AdminController],
