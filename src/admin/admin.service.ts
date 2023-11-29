@@ -214,7 +214,7 @@ export class AdminService {
           reference_link: key.url ?? '',
           image: key.urlToImage ?? '',
           content: key.content ?? '',
-          published_at: key.publishedAt ?? '',
+          published_at: new Date(key.publishedAt) ?? '',
         }).save();
       }
       return res.status(HttpStatus.CREATED).json({
@@ -238,7 +238,7 @@ export class AdminService {
     try {
       const news = await this.newsModel.findOne({
         title: body.title,
-        author: body.author,
+        source: body.source,
       });
       if (news) {
         return res.status(HttpStatus.BAD_REQUEST).json({
@@ -249,13 +249,13 @@ export class AdminService {
       const category = await this.categoryModel.findOne({
         slug: body.category,
       });
-      const url = `${req.protocol}://${req.headers.host}/uploads/${file.filename}`;
       if (!file) {
         return res.status(HttpStatus.BAD_REQUEST).json({
           success: false,
           message: 'Image is Required',
         });
       }
+      const url = `${req.protocol}://${req.headers.host}/uploads/${file.filename}`;
       await new this.newsModel({
         category_id: new mongoose.Types.ObjectId(category._id),
         category_name: body.category,
@@ -267,7 +267,7 @@ export class AdminService {
         reference_link: body.reference_link,
         image: url,
         content: body.content,
-        published_at: new Date,
+        published_at: new Date(),
       }).save();
       return res.status(HttpStatus.OK).json({
         success: true,
