@@ -283,7 +283,7 @@ export class AdminService {
           receiver_type: 'user',
           receiver_id: user._id,
           type: 'news',
-          action: 'New news posted',
+          action: 'news posted',
           title: 'New news',
           body: 'New news available',
         }).save();
