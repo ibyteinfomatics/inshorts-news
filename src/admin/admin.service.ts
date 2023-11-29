@@ -262,7 +262,7 @@ export class AdminService {
         });
       }
       const url = `${req.protocol}://${req.headers.host}/uploads/${file.filename}`;
-      await new this.newsModel({
+      const newNews = await new this.newsModel({
         category_id: new mongoose.Types.ObjectId(category._id),
         category_name: body.category,
         type: body.type,
@@ -274,6 +274,15 @@ export class AdminService {
         image: url,
         content: body.content,
         published_at: new Date(),
+      }).save();
+      await new this.attachmentModel({
+        news_id: new mongoose.Types.ObjectId(newNews._id),
+        type: 'news',
+        name: 'image',
+        file_name: file.filename,
+        mime_type: file.mimetype,
+        path: file.path,
+        base_url: ENV.BASE_URL,
       }).save();
       const users = await this.userModel.find();
       for (const user of users) {

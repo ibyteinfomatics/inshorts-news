@@ -1,11 +1,13 @@
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 
+@Schema({ timestamps: true })
 export class Attachment {
   @Prop()
-  news_id: string;
+  news_id: mongoose.Types.ObjectId;
 
   @Prop()
-  user_idz: string;
+  user_id: mongoose.Types.ObjectId;
 
   @Prop()
   type: string;
