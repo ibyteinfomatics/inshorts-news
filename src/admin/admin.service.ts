@@ -290,7 +290,7 @@ export class AdminService {
           sender_type: 'admin',
           sender_id: null,
           receiver_type: 'user',
-          receiver_id: user._id,
+          receiver_id: new mongoose.Types.ObjectId(user._id),
           type: 'news',
           action: 'news posted',
           title: 'New news',
