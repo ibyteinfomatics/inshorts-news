@@ -282,7 +282,7 @@ export class AdminService {
         file_name: file.filename,
         mime_type: file.mimetype,
         path: file.path,
-        base_url: ENV.BASE_URL,
+        base_url: `${req.protocol}://${req.headers.host}`,
       }).save();
       const users = await this.userModel.find();
       for (const user of users) {
