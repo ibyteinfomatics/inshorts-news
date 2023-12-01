@@ -42,6 +42,6 @@ export class AppService {
     }
   }
   getHello(): string {
-    return 'Hello World!';
+    return '<h1 style="margin-left: 420px; margin-top: 300px" >Hello World This Is Inshorts-News-Api</h1>';
   }
 }
