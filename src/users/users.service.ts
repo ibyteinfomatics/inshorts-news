@@ -165,7 +165,7 @@ export class UsersService {
       const preferredCategory = await this.mapUserCategoryModel.findOne({
         $or: [
           { user_id: body.user_id, category_id: body.category_id },
-          { device_token: body.device_token, category_id: body.category_id },
+          { device_token: body.device_id, category_id: body.category_id },
         ],
       });
       if (preferredCategory) {
@@ -174,7 +174,7 @@ export class UsersService {
             $or: [
               { user_id: body.user_id, category_id: body.category_id },
               {
-                device_token: body.device_token,
+                device_token: body.device_id,
                 category_id: new mongoose.Types.ObjectId(body.category_id),
               },
             ],
@@ -188,7 +188,7 @@ export class UsersService {
       } else {
         await new this.mapUserCategoryModel({
           user_id: new mongoose.Types.ObjectId(body.user_id),
-          device_token: body.device_token,
+          device_token: body.device_id,
           category_id: new mongoose.Types.ObjectId(body.category_id),
           priority: body.priority,
         }).save();
@@ -211,7 +211,7 @@ export class UsersService {
       const userCategories = await this.mapUserCategoryModel.find({
         $or: [
           { user_id: new mongoose.Types.ObjectId(body.user_id) },
-          { device_token: body.device_token },
+          { device_token: body.device_id },
         ],
       });
       const favourites = [];
@@ -229,7 +229,7 @@ export class UsersService {
       });
       const seenNews = await this.mapNewsSeenModel.find({
         $or: [
-          { device_token: body.device_token },
+          { device_token: body.device_id },
           { user_id: new mongoose.Types.ObjectId(body.user_id) },
         ],
       });
@@ -237,12 +237,12 @@ export class UsersService {
         await this.mapNewsSeenModel.deleteMany({
           $or: [
             { user_id: new mongoose.Types.ObjectId(body.user_id) },
-            { device_token: body.device_token },
+            { device_token: body.device_id },
           ],
         });
         seenNews.length = await this.mapNewsSeenModel.countDocuments({
           $or: [
-            { device_token: body.device_token },
+            { device_token: body.device_id },
             { user_id: new mongoose.Types.ObjectId(body.user_id) },
           ],
         });
@@ -271,7 +271,7 @@ export class UsersService {
         for (const news of newNews) {
           await new this.mapNewsSeenModel({
             news_id: news._id,
-            device_token: body.device_token,
+            device_token: body.device_id,
             user_id: new mongoose.Types.ObjectId(body.user_id),
           }).save();
         }
@@ -315,7 +315,7 @@ export class UsersService {
         for (const news of lastNews) {
           await new this.mapNewsSeenModel({
             news_id: news._id,
-            device_token: body.device_token,
+            device_token: body.device_id,
             user_id: new mongoose.Types.ObjectId(body.user_id),
           }).save();
         }
@@ -399,7 +399,7 @@ export class UsersService {
       const noNewsCatgeory = await this.mapUserCategoryModel.find({
         $or: [
           { user_id: new mongoose.Types.ObjectId(body.user_id) },
-          { device_token: body.device_token },
+          { device_token: body.device_id },
         ],
       });
       const notInterested = [];

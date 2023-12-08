@@ -9,7 +9,7 @@ export class AddPreferredCategoryDto {
   @ValidateIf((o) => o.type === 'by_device')
   @IsNotEmpty()
   @IsString()
-  device_token: string;
+  device_id: string;
 
   @ValidateIf((o) => o.type === 'by_user')
   @IsNotEmpty()

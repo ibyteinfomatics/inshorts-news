@@ -14,7 +14,7 @@ export class AllNewsByCatgeory {
   @ValidateIf((o) => o.type === 'by_device')
   @IsNotEmpty()
   @IsString()
-  device_token: string;
+  device_id: string;
 
   @IsNotEmpty()
   @IsString()
