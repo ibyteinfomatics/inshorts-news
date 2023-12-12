@@ -271,8 +271,10 @@ export class UsersService {
         for (const news of newNews) {
           await new this.mapNewsSeenModel({
             news_id: news._id,
-            device_id: body.device_id,
-            user_id: new mongoose.Types.ObjectId(body.user_id),
+            device_id: body.device_id ? body.device_id : '',
+            user_id: body.user_id
+              ? new mongoose.Types.ObjectId(body.user_id)
+              : '',
           }).save();
         }
         return res.status(HttpStatus.OK).json({
@@ -315,8 +317,10 @@ export class UsersService {
         for (const news of lastNews) {
           await new this.mapNewsSeenModel({
             news_id: news._id,
-            device_id: body.device_id,
-            user_id: new mongoose.Types.ObjectId(body.user_id),
+            device_id: body.device_id ? body.device_id : '',
+            user_id: body.user_id
+              ? new mongoose.Types.ObjectId(body.user_id)
+              : '',
           }).save();
         }
         return res.status(HttpStatus.OK).json({
@@ -394,32 +398,56 @@ export class UsersService {
   }
 
   //----------------------Get All News By Category----------------------//
-  async getAllNewsByCategory(body: AllNewsByCatgeory, res: Response) {
+  async getAllNewsByCategory(
+    limit = 10,
+    body: AllNewsByCatgeory,
+    res: Response,
+  ) {
     try {
-      const noNewsCatgeory = await this.mapUserCategoryModel.find({
+      const findCategory = await this.categoryModel.findOne({
+        slug: body.category,
+      });
+      if (!findCategory) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'Category not found',
+        });
+      }
+      const noNewsCatgeory = await this.mapUserCategoryModel.findOne({
+        $or: [
+          {
+            user_id: new mongoose.Types.ObjectId(body.user_id),
+            priority: 'no',
+            category_id: findCategory._id,
+          },
+          {
+            device_id: body.device_id,
+            priority: 'no',
+            category_id: findCategory._id,
+          },
+        ],
+      });
+      if (noNewsCatgeory) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'You have unfollowed this category',
+        });
+      }
+      const seenNews = await this.mapNewsSeenModel.find({
         $or: [
           { user_id: new mongoose.Types.ObjectId(body.user_id) },
-          { device_token: body.device_id },
+          { device_id: body.device_id },
         ],
       });
-      const notInterested = [];
-      for (const news of noNewsCatgeory) {
-        if (news['user_id']) {
-          notInterested.push(news.user_id);
-        } else {
-          notInterested.push(news.device_id);
+      const seenNewsArr = [];
+      if (seenNews.length > 0) {
+        for (let item of seenNews) {
+          seenNewsArr.push(item._id);
         }
+        console.log(seenNewsArr);
       }
-      const news = await this.newsModel.find({
-        category_name: body.category,
-        $or: [
-          { user_id: { $nin: notInterested } },
-          { device_token: { $nin: notInterested } },
-        ],
-      });
       return res.status(HttpStatus.OK).json({
         success: true,
-        news,
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({

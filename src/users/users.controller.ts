@@ -46,9 +46,10 @@ export class UsersController {
   //----------------------Get All News By Category----------------------//
   @Post('get_all_news_by_category')
   async getAllNewsByCategory(
+    @Query('limit') limit:number,
     @Body() body: AllNewsByCatgeory,
     @Res() res: Response,
   ) {
-    return await this.usersService.getAllNewsByCategory(body, res);
+    return await this.usersService.getAllNewsByCategory(limit,body, res);
   }
 }

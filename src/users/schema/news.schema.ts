@@ -1,8 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 
-export type NewsDocument = News & Document;
-
 @Schema({ timestamps: true })
 export class News {
   @Prop()
@@ -40,3 +38,4 @@ export class News {
 }
 
 export const NewsSchema = SchemaFactory.createForClass(News);
+export type NewsDocument = News & Document;
