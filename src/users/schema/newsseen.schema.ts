@@ -10,7 +10,7 @@ export class MapNewsSeen {
   user_id: mongoose.Types.ObjectId;
 
   @Prop()
-  device_token: string;
+  device_id: string;
 }
 
 export const MapNewsSeenSchema = SchemaFactory.createForClass(MapNewsSeen);

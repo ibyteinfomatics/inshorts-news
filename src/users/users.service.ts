@@ -211,7 +211,7 @@ export class UsersService {
       const userCategories = await this.mapUserCategoryModel.find({
         $or: [
           { user_id: new mongoose.Types.ObjectId(body.user_id) },
-          { device_token: body.device_id },
+          { device_id: body.device_id },
         ],
       });
       const favourites = [];
@@ -229,7 +229,7 @@ export class UsersService {
       });
       const seenNews = await this.mapNewsSeenModel.find({
         $or: [
-          { device_token: body.device_id },
+          { device_id: body.device_id },
           { user_id: new mongoose.Types.ObjectId(body.user_id) },
         ],
       });
@@ -237,7 +237,7 @@ export class UsersService {
         await this.mapNewsSeenModel.deleteMany({
           $or: [
             { user_id: new mongoose.Types.ObjectId(body.user_id) },
-            { device_token: body.device_id },
+            { device_id: body.device_id },
           ],
         });
         seenNews.length = await this.mapNewsSeenModel.countDocuments({
@@ -271,7 +271,7 @@ export class UsersService {
         for (const news of newNews) {
           await new this.mapNewsSeenModel({
             news_id: news._id,
-            device_token: body.device_id,
+            device_id: body.device_id,
             user_id: new mongoose.Types.ObjectId(body.user_id),
           }).save();
         }
@@ -315,7 +315,7 @@ export class UsersService {
         for (const news of lastNews) {
           await new this.mapNewsSeenModel({
             news_id: news._id,
-            device_token: body.device_id,
+            device_id: body.device_id,
             user_id: new mongoose.Types.ObjectId(body.user_id),
           }).save();
         }
@@ -407,7 +407,7 @@ export class UsersService {
         if (news['user_id']) {
           notInterested.push(news.user_id);
         } else {
-          notInterested.push(news.device_token);
+          notInterested.push(news.device_id);
         }
       }
       const news = await this.newsModel.find({

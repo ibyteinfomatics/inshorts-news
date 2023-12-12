@@ -8,7 +8,7 @@ export class MapUserCategory {
   user_id: mongoose.Types.ObjectId;
 
   @Prop()
-  device_token: string;
+  device_id: string;
 
   @Prop()
   category_id: mongoose.Types.ObjectId;
