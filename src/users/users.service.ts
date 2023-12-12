@@ -266,6 +266,7 @@ export class UsersService {
             category_id: { $nin: notInterested },
             _id: { $nin: seenArr },
           })
+          .sort({ createdAt: -1 })
           .skip((page - 1) * limit)
           .limit(limit);
         for (const news of newNews) {
@@ -312,6 +313,7 @@ export class UsersService {
             category_id: { $nin: notInterested },
             _id: { $nin: seenArr },
           })
+          .sort({ createdAt: -1 })
           .skip((page - 1) * limit)
           .limit(limit);
         for (const news of lastNews) {
