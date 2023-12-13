@@ -441,15 +441,61 @@ export class UsersService {
           { device_id: body.device_id },
         ],
       });
-      const seenNewsArr = [];
       if (seenNews.length > 0) {
+        let seenNewsArr = [];
         for (let item of seenNews) {
-          seenNewsArr.push(item._id);
+          seenNewsArr.push(item.news_id);
         }
-        console.log(seenNewsArr);
+        const categoryNewsCount = await this.newsModel.countDocuments({
+          category_id: findCategory._id,
+        });
+        const categoryNotSeenNewsCount = await this.newsModel.countDocuments({
+          _id: { $nin: seenNewsArr },
+          category_id: new mongoose.Types.ObjectId(findCategory._id),
+        });
+        if (categoryNotSeenNewsCount === 0) {
+          await this.mapNewsSeenModel.deleteMany({
+            $or: [
+              { user_id: new mongoose.Types.ObjectId(body.user_id) },
+              { device_id: body.device_id },
+            ],
+          });
+          seenNewsArr = [];
+        }
+        const newNews = await this.newsModel
+          .find({ _id: { $nin: seenNewsArr }, category_id: findCategory._id })
+          .limit(limit)
+          .sort({ createdAt: -1 });
+        for (let i = 0; i < newNews.length; i++) {
+          await new this.mapNewsSeenModel({
+            news_id: new mongoose.Types.ObjectId(newNews[i]._id),
+            user_id: body.user_id
+              ? new mongoose.Types.ObjectId(body.user_id)
+              : '',
+            device_id: body.device_id ? body.device_id : '',
+          }).save();
+        }
+        return res.status(HttpStatus.OK).json({
+          success: true,
+          newNews,
+        });
+      }
+      const news = await this.newsModel
+        .find({ category_id: findCategory._id })
+        .sort({ createdAt: -1 })
+        .limit(limit);
+      for (let i = 0; i < news.length; i++) {
+        await new this.mapNewsSeenModel({
+          news_id: new mongoose.Types.ObjectId(news[i]._id),
+          user_id: body.user_id
+            ? new mongoose.Types.ObjectId(body.user_id)
+            : '',
+          device_id: body.device_id ? body.device_id : '',
+        }).save();
       }
       return res.status(HttpStatus.OK).json({
         success: true,
+        news,
       });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
