@@ -513,4 +513,20 @@ export class UsersService {
       });
     }
   }
+
+  //----------------------Get All Categories------------------------//
+  async getAllCategories(res: Response) {
+    try {
+      const categories = await this.categoryModel.find();
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        categories,
+      });
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SignUpDto } from './dto/signUp.dto';
 import { Response } from 'express';
@@ -51,5 +51,11 @@ export class UsersController {
     @Res() res: Response,
   ) {
     return await this.usersService.getAllNewsByCategory(limit,body, res);
+  }
+
+  //----------------------Get All Categories------------------------//
+  @Get('get_all_categories')
+  async getAllCategories(@Res() res: Response) {
+    return await this.usersService.getAllCategories(res);
   }
 }
