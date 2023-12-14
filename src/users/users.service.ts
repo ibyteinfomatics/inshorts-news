@@ -162,41 +162,50 @@ export class UsersService {
   //----------------------Add Preferred Category----------------------//
   async addPreferredCategory(body: AddPreferredCategoryDto, res: Response) {
     try {
-      const preferredCategory = await this.mapUserCategoryModel.findOne({
-        $or: [
-          { user_id: body.user_id, category_id: body.category_id },
-          { device_token: body.device_id, category_id: body.category_id },
-        ],
-      });
-      if (preferredCategory) {
-        await this.mapUserCategoryModel.findOneAndUpdate(
-          {
-            $or: [
-              { user_id: body.user_id, category_id: body.category_id },
-              {
-                device_token: body.device_id,
-                category_id: new mongoose.Types.ObjectId(body.category_id),
-              },
-            ],
-          },
-          body,
-        );
-        return res.status(HttpStatus.CREATED).json({
-          success: true,
-          message: 'Preference updated successfully.',
+      for (const key of body.category_ids) {
+        const preferredCategory = await this.mapUserCategoryModel.findOne({
+          $or: [
+            {
+              user_id: body.user_id,
+              category_id: new mongoose.Types.ObjectId(key),
+            },
+            {
+              device_token: body.device_id,
+              category_id: new mongoose.Types.ObjectId(key),
+            },
+          ],
         });
-      } else {
-        await new this.mapUserCategoryModel({
-          user_id: new mongoose.Types.ObjectId(body.user_id),
-          device_token: body.device_id,
-          category_id: new mongoose.Types.ObjectId(body.category_id),
-          priority: body.priority,
-        }).save();
-        return res.status(HttpStatus.CREATED).json({
-          success: true,
-          message: 'Preference created successfully.',
-        });
+        if (preferredCategory) {
+          await this.mapUserCategoryModel.findOneAndUpdate(
+            {
+              $or: [
+                {
+                  user_id: body.user_id,
+                  category_id: new mongoose.Types.ObjectId(key),
+                },
+                {
+                  device_token: body.device_id,
+                  category_id: new mongoose.Types.ObjectId(key),
+                },
+              ],
+            },
+            {
+              priority: body.priority,
+            },
+          );
+        } else {
+          await new this.mapUserCategoryModel({
+            user_id: new mongoose.Types.ObjectId(body.user_id),
+            device_id: body.device_id,
+            category_id: new mongoose.Types.ObjectId(key),
+            priority: body.priority,
+          }).save();
+        }
       }
+      return res.status(HttpStatus.CREATED).json({
+        success: true,
+        message: 'Preference created successfully.',
+      });
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,

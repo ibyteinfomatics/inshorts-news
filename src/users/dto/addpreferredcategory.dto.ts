@@ -1,4 +1,4 @@
-import { IsIn, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { IsArray, IsIn, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
 
 export class AddPreferredCategoryDto {
   @IsNotEmpty()
@@ -17,8 +17,8 @@ export class AddPreferredCategoryDto {
   user_id: string;
 
   @IsNotEmpty()
-  @IsString()
-  category_id: string;
+  @IsArray()
+  category_ids: Array<string>;
 
   @IsNotEmpty()
   @IsString()
