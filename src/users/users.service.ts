@@ -473,8 +473,8 @@ export class UsersService {
         }
         const newNews = await this.newsModel
           .find({ _id: { $nin: seenNewsArr }, category_id: findCategory._id })
-          .limit(limit)
-          .sort({ createdAt: -1 });
+          .sort({ createdAt: -1 })
+          .limit(limit);
         for (let i = 0; i < newNews.length; i++) {
           await new this.mapNewsSeenModel({
             news_id: new mongoose.Types.ObjectId(newNews[i]._id),
@@ -517,7 +517,7 @@ export class UsersService {
   //----------------------Get All Categories------------------------//
   async getAllCategories(res: Response) {
     try {
-      const categories = await this.categoryModel.find();
+      const categories = await this.categoryModel.find().sort({createdAt:-1});
       return res.status(HttpStatus.OK).json({
         success: true,
         categories,
