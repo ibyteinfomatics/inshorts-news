@@ -195,8 +195,10 @@ export class UsersService {
           );
         } else {
           await new this.mapUserCategoryModel({
-            user_id: new mongoose.Types.ObjectId(body.user_id),
-            device_id: body.device_id,
+            user_id: body.user_id
+              ? new mongoose.Types.ObjectId(body.user_id)
+              : '',
+            device_id: body.device_id ? body.device_id : '',
             category_id: new mongoose.Types.ObjectId(key),
             priority: body.priority,
           }).save();
@@ -292,30 +294,6 @@ export class UsersService {
           newNews,
         });
       }
-      // if (seenNews.length < favouriteNewsCount) {
-      //   const favouriteNews = await this.newsModel
-      //     .find({
-      //       $and: [
-      //         { category_id: { $in: favourites }, _id: { $nin: seenArr } },
-      //         { category_id: { $nin: notInterested } },
-      //       ],
-      //     })
-      //     .skip((page - 1) * limit)
-      //     .limit(limit);
-
-      //   for (const news of favouriteNews) {
-      //     await new this.mapNewsSeenModel({
-      //       news_id: news._id,
-      //       device_token: body.device_token,
-      //       user_id: new mongoose.Types.ObjectId(body.user_id),
-      //     }).save();
-      //   }
-
-      //   return res.status(HttpStatus.OK).json({
-      //     success: true,
-      //     favouriteNews,
-      //   });
-      // }
       if (seenNews.length < allNews) {
         const lastNews = await this.newsModel
           .find({
@@ -339,67 +317,6 @@ export class UsersService {
           lastNews,
         });
       }
-      // const originalNewsCount = await this.newsModel.countDocuments({});
-      // const categoryNews = await this.newsModel.countDocuments({
-      //   category_name: { $regex: `.*${category}.*`, $options: 'i' },
-      // });
-      // const seenNews = await this.mapNewsSeenModel.find({
-      //   $or: [{ user_id: body.user_id }, { device_token: body.device_token }],
-      // });
-      // if (categoryNews === seenNews.length) {
-      //   await this.mapNewsSeenModel.deleteMany({
-      //     user_id: new mongoose.Types.ObjectId(body.user_id),
-      //   });
-
-      //   const newFindNews = await this.newsModel
-      //     .find({
-      //       category_name: { $regex: `.*${category}.*`, $options: 'i' },
-      //       // category_id: { $nin: notArr },
-      //     })
-      //     .skip((page - 1) * limit)
-      //     .limit(limit);
-
-      //   return res.status(HttpStatus.OK).json({
-      //     success: true,
-      //     allNews: newFindNews,
-      //     page: page,
-      //     pages: categoryNews / limit,
-      //     limit: limit,
-      //     total: originalNewsCount,
-      //   });
-      // } else {
-      //   const arr = [];
-      //   for (const key of seenNews) {
-      //     arr.push(new mongoose.Types.ObjectId(key.news_id));
-      //   }
-      //   const allNews = await this.newsModel
-      //     .find({
-      //       _id: { $nin: arr },
-      //       category_name: { $regex: `.*${category}.*`, $options: 'i' },
-      //     })
-      //     .skip((page - 1) * limit)
-      //     .limit(10);
-
-      //   for (const news of allNews) {
-      //     await new this.mapNewsSeenModel({
-      //       user_id: new mongoose.Types.ObjectId(body.user_id),
-      //       device_token: body.device_token,
-      //       news_id: news._id,
-      //     }).save();
-      //   }
-      //   return res.status(HttpStatus.OK).json({
-      //     success: true,
-      //     allNews,
-      //     page,
-      //     limit,
-      //     total: allNews.length,
-      //     pages: allNews.length / limit,
-      //   });
-      // }
-      // const allNews = await this.newsModel.find({
-      // category_id: { $nin: notArr },
-      // });
-      // const category_news = await this.newsModel.find({});
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
@@ -515,13 +432,129 @@ export class UsersService {
   }
 
   //----------------------Get All Categories------------------------//
-  async getAllCategories(res: Response) {
+  async getAllCategories(type: string, id: string, res: Response) {
     try {
-      const categories = await this.categoryModel.find().sort({createdAt:-1});
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        categories,
-      });
+      if (type === 'by_user' || type === 'by_device') {
+        let choosedCategories;
+        if (type === 'by_user') {
+          choosedCategories = await this.mapUserCategoryModel.aggregate([
+            {
+              $match: {
+                user_id: new mongoose.Types.ObjectId(id),
+              },
+            },
+            {
+              $sort: { updatedAt: -1 },
+            },
+            {
+              $project: {
+                createdAt: 0,
+                updatedAt: 0,
+                __v: 0,
+              },
+            },
+            {
+              $lookup: {
+                from: 'categories',
+                as: 'category',
+                let: { category_id: '$category_id' },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: ['$_id', '$$category_id'],
+                      },
+                    },
+                  },
+                  {
+                    $project: {
+                      _id: 0,
+                      createdAt: 0,
+                      updatedAt: 0,
+                      __v: 0,
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              $unwind: {
+                path: '$category',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+          ]);
+        } else {
+          choosedCategories = await this.mapUserCategoryModel.aggregate([
+            {
+              $match: {
+                device_id: id,
+              },
+            },
+            {
+              $sort: { updatedAt: -1 },
+            },
+            {
+              $project: {
+                createdAt: 0,
+                updatedAt: 0,
+                __v: 0,
+              },
+            },
+            {
+              $lookup: {
+                from: 'categories',
+                as: 'category',
+                let: { category_id: '$category_id' },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: ['$_id', '$$category_id'],
+                      },
+                    },
+                  },
+                  {
+                    $project: {
+                      _id: 0,
+                      createdAt: 0,
+                      updatedAt: 0,
+                      __v: 0,
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              $unwind: {
+                path: '$category',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+          ]);
+        }
+        const choosedCategoriesId = [];
+        if (choosedCategories.length > 0) {
+          for (let i = 0; i < choosedCategories.length; i++) {
+            choosedCategoriesId.push(choosedCategories[i].category_id);
+          }
+        }
+        const notChoosedCategories = await this.categoryModel
+          .find({
+            _id: { $nin: choosedCategoriesId },
+          })
+          .select({ createdAt: 0, updatedAt: 0, __v: 0 });
+        return res.status(HttpStatus.OK).json({
+          success: true,
+          choosedCategories,
+          notChoosedCategories,
+        });
+      } else {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'Type must be by_user or by_device',
+        });
+      }
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,

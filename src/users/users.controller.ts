@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SignUpDto } from './dto/signUp.dto';
 import { Response } from 'express';
@@ -46,16 +46,20 @@ export class UsersController {
   //----------------------Get All News By Category----------------------//
   @Post('get_all_news_by_category')
   async getAllNewsByCategory(
-    @Query('limit') limit:number,
+    @Query('limit') limit: number,
     @Body() body: AllNewsByCatgeory,
     @Res() res: Response,
   ) {
-    return await this.usersService.getAllNewsByCategory(limit,body, res);
+    return await this.usersService.getAllNewsByCategory(limit, body, res);
   }
 
   //----------------------Get All Categories------------------------//
   @Get('get_all_categories')
-  async getAllCategories(@Res() res: Response) {
-    return await this.usersService.getAllCategories(res);
+  async getAllCategories(
+    @Query('type') type: string,
+    @Query('id') id: string,
+    @Res() res: Response,
+  ) {
+    return await this.usersService.getAllCategories(type,id,res);
   }
 }
