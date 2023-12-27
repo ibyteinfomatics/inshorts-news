@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SignUpDto } from './dto/signUp.dto';
 import { Response } from 'express';
@@ -6,6 +16,9 @@ import { SignInDto } from './dto/login.dto';
 import { AddPreferredCategoryDto } from './dto/addpreferredcategory.dto';
 import { GetAllNewsDto } from './dto/getallnews.dto';
 import { AllNewsByCatgeory } from './dto/getallnewsbycategory.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { editFileName, mediaFileFilter } from 'src/helper/fileupload.helper';
 
 @Controller('users')
 export class UsersController {
@@ -60,6 +73,25 @@ export class UsersController {
     @Query('id') id: string,
     @Res() res: Response,
   ) {
-    return await this.usersService.getAllCategories(type,id,res);
+    return await this.usersService.getAllCategories(type, id, res);
+  }
+
+  //-----------------------Update Profile------------------------//
+  @Post('update_profile/:user_id')
+  @UseInterceptors(
+    FileInterceptor('profile', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: editFileName,
+      }),
+      fileFilter: mediaFileFilter,
+    }),
+  )
+  async updateProfile(
+    @Param('user_id') user_id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response,
+  ) {
+    return await this.usersService.updateProfile(user_id, file, res);
   }
 }

@@ -562,4 +562,27 @@ export class UsersService {
       });
     }
   }
+
+  //-----------------------Update Profile------------------------//
+  async updateProfile(
+    user_id: string,
+    file: Express.Multer.File,
+    res: Response,
+  ) {
+    try {
+      const user = await this.userModel.findById(user_id);
+      if (!user) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'User not found',
+        });
+      }
+      
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
 }
